@@ -2,6 +2,7 @@
 
 import os.path
 import random
+import sys
 
 import threading
 import time
@@ -15,6 +16,9 @@ reversed_list: list = []
 nearly_sorted_list: list = []
 
 threads: list = []
+
+# Settings
+sys.setrecursionlimit(1000000)
 
 
 def callback(message: str) -> None:
@@ -55,11 +59,46 @@ def quick_sorting(a_list: list) -> list:
 
 
 def quick_sort_executor(lst: list, list_name: str) -> None:
+    """
+    Create a file if it does not exist of a selection sorted list
+
+    :param lst: the list the program should use to sort using selection sorting
+    :param list_name: the list name the program should use for creating the file path
+    :return: None
+    """
+
+    if (len(lst) < 1):
+        pass
+
     new_list = quick_sorting(lst)
     create_file_if_not_exists("new_" + list_name, new_list)
 
 
+def selection_sort_executor(lst: list, list_name: str) -> None:
+    """
+    Create a file if it does not exist of a selection sorted list
+
+    :param lst: the list the program should use to sort using selection sorting
+    :param list_name: the list name the program should use for creating the file path
+    :return: None
+    """
+
+    if (len(lst) < 1):
+        pass
+
+    new_list = selection_sorting(lst)
+    create_file_if_not_exists("new_" + list_name, new_list)
+
+
 def create_file_if_not_exists(name: str, values: list) -> None:
+    """
+    Create a file if it does not exist yet. Files will be stored directly in the project source.
+    NOTE: This function will automatically add '.txt' to the path.
+
+    :param name: the name of the file you want to create
+    :param values: the values the program should put in the created file
+    :return: None
+    """
     path: str = name + ".txt"
 
     if (os.path.exists(path)):
@@ -72,6 +111,12 @@ def create_file_if_not_exists(name: str, values: list) -> None:
 
 
 def test_performance(code: threading.Thread) -> None:
+    """
+    Test a threading.Thread with built in logging messages. Timestamp is in millis
+
+    :param code: the threading.Thread to test
+    :return: None
+    """
     print(f"[Performance] Started testing '{code.name}'")
     start_millis = int(time.time() * 1000)
 
@@ -82,6 +127,12 @@ def test_performance(code: threading.Thread) -> None:
 
 
 def initialize_lists() -> None:
+    """
+    This is the most important function of the entire program. This function is used to initialize the list and
+    fill the global variables with values. Make sure you fire this function on startup before starting the threading.
+
+    :return: None
+    """
     global initialized, random_list, reversed_list, nearly_sorted_list
 
     while (not initialized):
@@ -102,14 +153,12 @@ def initialize_lists() -> None:
         initialized = True
 
 
-def initialize_threads() -> None:
-    threads.append(
-        threading.Thread(
-            target=initialize_lists,
-            name="Initializing Lists"
-        )
-    )
+def initialize_quick_sorting_threads() -> None:
+    """
+    Initialize the quick sorting threads and add them to the threads list
 
+    :return: None
+    """
     threads.append(
         threading.Thread(
             target=quick_sort_executor,
@@ -135,12 +184,46 @@ def initialize_threads() -> None:
     )
 
 
-if __name__ == '__main__':
-    initialize_threads()
+def initialize_selection_sorting_threads() -> None:
+    """
+    Initialize the selection sorting threads and add them to the threads list
 
-    for thread in threads:
-        if "Initializing Lists" not in thread.name:
-            test_performance(thread)
-            # test
-        else:
-            thread.start()
+    :return: None
+    """
+    threads.append(
+        threading.Thread(
+            target=selection_sort_executor,
+            name="Selection Sorting 'random_list'",
+            args=(random_list, "random_list")
+        )
+    )
+
+    threads.append(
+        threading.Thread(
+            target=selection_sort_executor,
+            name="Selection Sorting 'reversed_list'",
+            args=(reversed_list, "reversed_list")
+        )
+    )
+
+    threads.append(
+        threading.Thread(
+            target=selection_sort_executor,
+            name="Selection Sorting 'nearly_sorted_list'",
+            args=(nearly_sorted_list, "nearly_sorted_list")
+        )
+    )
+
+
+if __name__ == '__main__':
+    """
+    This will be used to start the program. Comment out what type of sorting you don't want to use.
+    At the moment you are only able to have one sorting type enabled at the time.
+    
+    Date: 28 Oct 2020
+    """
+    initialize_lists()
+    initialize_selection_sorting_threads()
+    # initialize_quick_sorting_threads()
+
+    [test_performance(thread) for thread in threads]
