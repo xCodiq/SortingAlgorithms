@@ -21,16 +21,6 @@ threads: list = []
 sys.setrecursionlimit(1000000)
 
 
-def callback(message: str) -> None:
-    """
-    This is a really simple callback.
-
-    :param message: The message you want to send.
-    :return: None
-    """
-    print(f"[Success] - {message}")
-
-
 def selection_sorting(a_list: list) -> list:
     for i in range(len(a_list)):
 
@@ -99,6 +89,7 @@ def create_file_if_not_exists(name: str, values: list) -> None:
     :param values: the values the program should put in the created file
     :return: None
     """
+
     path: str = name + ".txt"
 
     if (os.path.exists(path)):
@@ -117,6 +108,7 @@ def test_performance(code: threading.Thread) -> None:
     :param code: the threading.Thread to test
     :return: None
     """
+
     print(f"[Performance] Started testing '{code.name}'")
     start_millis = int(time.time() * 1000)
 
@@ -133,6 +125,7 @@ def initialize_lists() -> None:
 
     :return: None
     """
+
     global initialized, random_list, reversed_list, nearly_sorted_list
 
     while (not initialized):
@@ -159,6 +152,7 @@ def initialize_quick_sorting_threads() -> None:
 
     :return: None
     """
+
     threads.append(
         threading.Thread(
             target=quick_sort_executor,
@@ -190,6 +184,7 @@ def initialize_selection_sorting_threads() -> None:
 
     :return: None
     """
+
     threads.append(
         threading.Thread(
             target=selection_sort_executor,
@@ -217,13 +212,32 @@ def initialize_selection_sorting_threads() -> None:
 
 if __name__ == '__main__':
     """
-    This will be used to start the program. Comment out what type of sorting you don't want to use.
-    At the moment you are only able to have one sorting type enabled at the time.
+    This will be used to start the program. Comment out what type of sorting you don't want to use and delete any existing .txt files to reset the program.
     
-    Date: 28 Oct 2020
+    If you want individual testing, just remove the initialize threads methods and add an executor function in the main. (e.g. quick_sort_executor(random_list, "random_list"))
+    
+    NOTE: At the moment you are only able to have one sorting type enabled at the time. The program is a bit slow with creating files 
+    due to recursion limitations. At the top of the program you can either lower or higher the limit number.
+    
+    Date: 30 Oct 2020
     """
+
     initialize_lists()
-    initialize_selection_sorting_threads()
+    # initialize_selection_sorting_threads()
     # initialize_quick_sorting_threads()
+
+    # Single example.
+    test_performance(threading.Thread(
+        target=quick_sort_executor,
+        name="Quick Sorting 'random_list'",
+        args=(random_list, "random_list")
+    ))
+
+    # Once you execute this main method, the test performance sends this back:
+    #
+    # [Performance] Started testing 'Quick Sorting 'random_list''
+    # [Performance] Test 'Quick Sorting 'random_list'' took 7ms
+    #
+    # This test shows us that quick sorting a random_list took 7ms to sort.
 
     [test_performance(thread) for thread in threads]
